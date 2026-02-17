@@ -29,7 +29,7 @@ graph LR
     A[Nokia N95] -- HTTP (Port 80) --> B((Serveo Tunnel))
     B -- Secure Tunnel --> C[Python Bridge Server]
     C -- Local API --> D[Beeper Desktop]
-    D -- Internet --> E[The World (WhatsApp/Insta/Etc)]
+    D -- Internet --> E["The World (WhatsApp/Insta/Etc)"]
 ```
 
 1.  **The Phone** sends plain HTTP requests (`GET /get_messages`) over 3G or WiFi.
