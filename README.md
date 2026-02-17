@@ -39,7 +39,28 @@ graph LR
 
 ---
 
-## 🔓 Prerequisites: Jailbreak & Python
+## 💻 Prerequisites: Desktop Setup (The Bridge)
+
+The "Brain" of this operation runs on your computer. You need Python installed to run the bridge script (`server.py`).
+
+### 1. Install Python 3
+* **Windows:** Download the installer from [python.org](https://www.python.org/downloads/). **Important:** Check the box **"Add Python to PATH"** during installation.
+* **macOS:** Open Terminal and run: `brew install python` (requires Homebrew).
+* **Linux (Ubuntu/Debian):** Run `sudo apt update && sudo apt install python3 python3-pip`.
+
+### 2. Install Required Packages
+We need `Flask` to create the web server, `Requests` to talk to Beeper, and `Unidecode` to handle emojis.
+
+Open your Terminal (Command Prompt on Windows) and run:
+
+```bash
+pip install flask requests unidecode
+```
+*(If that fails on Linux/Mac, try `pip3 install flask requests unidecode`)*.
+
+---
+
+## 🔓 Prerequisites: Phone Setup (The Client)
 
 Before you can run custom scripts, you must "Hack" (Jailbreak) your Symbian device to bypass certificate restrictions.
 
@@ -69,6 +90,7 @@ The bridge needs to talk to your Beeper Desktop app. You need your secret token.
     grep -oP '"access_token":\s*"\K[^"]+' ~/.config/beeper/config.json
     ```
 * **Windows:** Open `%APPDATA%\Beeper\config.json` in Notepad and look for `access_token`.
+* **Note:** The token usually starts with `syt_` or `MDA...`.
 
 ### 2. Configuring `server.py` (The Bridge)
 Open `server.py` on your PC and update these lines at the top:
@@ -78,7 +100,7 @@ Open `server.py` on your PC and update these lines at the top:
 BEEPER_API_URL = "http://localhost:23373/v1"
 
 # PASTE YOUR TOKEN HERE (Keep the quotes!)
-ACCESS_TOKEN = "your_super_long_secret_token_starts_with_@"
+ACCESS_TOKEN = "your_real_token_starting_with_syt_..."
 ```
 
 ### 3. Configuring `default.py` (The Phone)
@@ -102,7 +124,7 @@ SERVER_PORT = 80
 ## 🛠️ Running the Bridge
 
 ### Part 1: Start the Python Server
-On your Linux PC, run the bridge script. It must stay running.
+On your PC, run the bridge script. It must stay running.
 ```bash
 python3 server.py
 ```
