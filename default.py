@@ -8,7 +8,7 @@ import urllib
 
 # --- CONFIGURATION ---
 # Your PERMANENT Serveo Address
-SERVER_HOST = "http://192.168.1.7"
+SERVER_HOST = "192.168.1.7"
 SERVER_PORT = 8080
 
 # Global Variables
