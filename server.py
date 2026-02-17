@@ -4,9 +4,8 @@ import requests
 from flask import Flask, request
 import sys
 import json
-from unidecode import unidecode  # <--- NEW LIBRARY
+from unidecode import unidecode
 
-# --- CONFIGURATION ---
 BEEPER_API_URL = "http://localhost:23373/v1"
 ACCESS_TOKEN = ""
 
@@ -20,12 +19,10 @@ def log(text):
     print(text)
     sys.stdout.flush()
 
-# --- NEW CLEANER FUNCTION ---
 def clean_for_nokia(text):
     if not text: return ""
     try:
-        # This converts Arabic/Chinese/Russian/Emoji to safe English text
-        # e.g., "مرحبا" -> "mrhb" or similar
+        # Converts emojis/unicode to ASCII safe for N95
         return unidecode(text)
     except:
         return "?"
@@ -56,41 +53,55 @@ def get_chat_list():
                 net = clean_for_nokia(c.get('network', 'Beeper'))
                 clean_list.append((name, c['id'], net))
             return json.dumps(clean_list, ensure_ascii=True)
+        else:
+            log(f"API Error {resp.status_code}: {resp.text}")
     except Exception as e:
         log(f"List Error: {e}")
     return "[]"
 
-@app.route('/select_chat', methods=['POST'])
+# --- FIX 1: Allow GET requests so the N95 can switch chats ---
+@app.route('/select_chat', methods=['GET', 'POST'])
 def select_chat():
     global CURRENT_CHAT_ID, message_buffer
-    new_id = request.form.get('id')
+    
+    # Check both URL params (GET) and Form data (POST)
+    new_id = request.values.get('id')
+    
     if new_id:
         CURRENT_CHAT_ID = new_id
         message_buffer = [] 
         log(f"Switching to: {new_id}")
         
         try:
+            # Fetch history immediately
             url = f"{BEEPER_API_URL}/chats/{CURRENT_CHAT_ID}/messages?limit=20"
             resp = requests.get(url, headers=headers)
             if resp.status_code == 200:
                 messages = resp.json()['items']
-                # Reverse to get oldest first
                 for m in reversed(messages):
                     sender = clean_for_nokia(m.get('senderName', 'Unknown'))
                     body = clean_for_nokia(m.get('text', '[Media]'))
                     msg_id = m.get('id', f"hist_{time.time()}")
                     message_buffer.append({'id': msg_id, 'sender': sender, 'msg': body})
-        except:
+            else:
+                log(f"Select Chat API Error: {resp.status_code}")
+        except Exception as e:
+            log(f"Select Error: {e}")
             pass
-    return "OK"
+            
+        return "OK"
+    return "Missing ID", 400
 
 @app.route('/get_messages', methods=['GET'])
 def get_messages():
     return json.dumps(message_buffer, ensure_ascii=True)
 
-@app.route('/send', methods=['POST'])
+# --- FIX 2: Allow GET requests so the N95 can send messages ---
+@app.route('/send', methods=['GET', 'POST'])
 def send_message():
-    msg = request.form.get('msg')
+    # Check both URL params (GET) and Form data (POST)
+    msg = request.values.get('msg')
+    
     if msg and CURRENT_CHAT_ID:
         log(f"N95 sending: {msg}")
         try:
@@ -109,7 +120,7 @@ def send_message():
 
 def poll_beeper():
     last_message_id = None
-    log("Bridge Active...")
+    log("Bridge Active... Listening for new messages...")
     while True:
         if CURRENT_CHAT_ID:
             try:
