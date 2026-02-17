@@ -8,7 +8,7 @@ from unidecode import unidecode  # <--- NEW LIBRARY
 
 # --- CONFIGURATION ---
 BEEPER_API_URL = "http://localhost:23373/v1"
-ACCESS_TOKEN = "8664a512-037b-4a3e-8a01-56f85f968b06"
+ACCESS_TOKEN = ""
 
 # --- GLOBALS ---
 CURRENT_CHAT_ID = None
